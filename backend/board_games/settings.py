@@ -97,13 +97,14 @@ WSGI_APPLICATION = 'board_games.wsgi.application'
 
 import os
 
-if os.getenv('DATABASE_URL'):
-    # Production/Test database (PostgreSQL) 
-    database_url = os.getenv('DATABASE_URL')
-    parsed = urlparse(database_url)
-    
-    if 'render.com' in parsed.hostname or 'oregon-postgres.render.com' in parsed.hostname:
-        # Simplified Render PostgreSQL configuration - try without SSL
+# For deployment troubleshooting, we'll use SQLite as fallback
+# and only use PostgreSQL when specifically configured
+try:
+    if os.getenv('DATABASE_URL') and 'postgres' in os.getenv('DATABASE_URL', ''):
+        # Production PostgreSQL database
+        database_url = os.getenv('DATABASE_URL')
+        parsed = urlparse(database_url)
+        
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.postgresql',
@@ -113,26 +114,30 @@ if os.getenv('DATABASE_URL'):
                 'HOST': parsed.hostname,
                 'PORT': parsed.port or 5432,
                 'OPTIONS': {
-                    'sslmode': 'disable',
+                    'sslmode': 'require',
                 },
             }
         }
+        print("Using PostgreSQL database")
     else:
-        # Use dj_database_url for CI/CD and other environments
+        # Fallback to SQLite for development and when PostgreSQL fails
         DATABASES = {
-            'default': dj_database_url.parse(
-                database_url,
-                conn_max_age=600 if 'localhost' not in database_url else 0,
-            )
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
         }
-else:
-    # Development database (SQLite)
+        print("Using SQLite database")
+except Exception as e:
+    # If anything goes wrong with PostgreSQL, fall back to SQLite
+    print(f"Database configuration error: {e}")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+    print("Falling back to SQLite database")
 
 
 # Password validation
