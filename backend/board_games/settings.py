@@ -14,8 +14,8 @@ from pathlib import Path
 from datetime import timedelta
 from decouple import config, Csv
 import os
-import dj_database_url
-from urllib.parse import urlparse
+# Removed: import dj_database_url (not needed with SQLite)
+# Removed: from urllib.parse import urlparse (not needed with SQLite)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -97,47 +97,36 @@ WSGI_APPLICATION = 'board_games.wsgi.application'
 
 import os
 
-# For deployment troubleshooting, we'll use SQLite as fallback
-# and only use PostgreSQL when specifically configured
-try:
-    if os.getenv('DATABASE_URL') and 'postgres' in os.getenv('DATABASE_URL', ''):
-        # Production PostgreSQL database
-        database_url = os.getenv('DATABASE_URL')
-        parsed = urlparse(database_url)
-        
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': parsed.path[1:],
-                'USER': parsed.username,
-                'PASSWORD': parsed.password,
-                'HOST': parsed.hostname,
-                'PORT': parsed.port or 5432,
-                'OPTIONS': {
-                    'sslmode': 'require',
-                },
-            }
-        }
-        print("Using PostgreSQL database")
-    else:
-        # Fallback to SQLite for development and when PostgreSQL fails
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': BASE_DIR / 'db.sqlite3',
-            }
-        }
-        print("Using SQLite database")
-except Exception as e:
-    # If anything goes wrong with PostgreSQL, fall back to SQLite
-    print(f"Database configuration error: {e}")
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+# TEMPORARY: Force SQLite for deployment until PostgreSQL compatibility is resolved
+# This ensures the app deploys successfully without psycopg2 issues
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-    print("Falling back to SQLite database")
+}
+print("Using SQLite database (forced for deployment compatibility)")
+
+# TODO: Re-enable PostgreSQL when psycopg2/psycopg3 compatibility is resolved
+# Commented out for now:
+# try:
+#     if os.getenv('DATABASE_URL') and 'postgres' in os.getenv('DATABASE_URL', ''):
+#         database_url = os.getenv('DATABASE_URL')
+#         parsed = urlparse(database_url)
+#         DATABASES = {
+#             'default': {
+#                 'ENGINE': 'django.db.backends.postgresql',
+#                 'NAME': parsed.path[1:],
+#                 'USER': parsed.username,
+#                 'PASSWORD': parsed.password,
+#                 'HOST': parsed.hostname,
+#                 'PORT': parsed.port or 5432,
+#                 'OPTIONS': {'sslmode': 'require'},
+#             }
+#         }
+#         print("Using PostgreSQL database")
+# except Exception as e:
+#     print(f"Database error: {e}, falling back to SQLite")
 
 
 # Password validation
