@@ -30,7 +30,8 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
+# Allow all hosts for development and deployment flexibility
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -215,19 +216,18 @@ SIMPLE_JWT = {
     'TOKEN_TYPE_CLAIM': 'token_type',
 }
 
-# CORS settings - Allow all origins for frontend flexibility
+# CORS settings - Allow all origins for maximum flexibility
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# Specific allowed origins (optional, used when CORS_ALLOW_ALL_ORIGINS is False)
+# Since CORS_ALLOW_ALL_ORIGINS is True, specific origins are not needed
+# But keeping some common ones for reference
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://localhost:3001", 
     "http://127.0.0.1:3000",
     "https://localhost:3000",
-    "https://127.0.0.1:3000",
-    # Vercel deployment URLs (add your actual domain once deployed)
-    "https://games-ai-taupe.vercel.app",
-    "https://*.vercel.app",
+    # Add any specific domains if needed in future
 ]
 
 # Allow specific headers
