@@ -14,3 +14,6 @@ from django.core.wsgi import get_wsgi_application
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'board_games.settings')
 
 application = get_wsgi_application()
+
+# TEMPORARY: Alias for Render typo - remove this after fixing dashboard
+applicatio = application
